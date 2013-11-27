@@ -15,20 +15,16 @@ $: << File.join(File.expand_path(File.dirname(__FILE__)))
 require 'csv'
 
 require 'sylfy'
-require 'mongo_mapper'
+require 'mongomodel'
 
 
 require 'dactyls/node.rb'
 
 
 module Dactyls
-    #MongoMapper.connection = Mongo::Connection.new(mongo_database['host'], 27017, :pool_size => 5, :timeout => 5)
-    #MongoMapper.database =  mongo_database['database']
-    def self.connection(host, port = 27017, options = {})
-        MongoMapper.connection = Mongo::Connection.new(host, port, options)
+
+    def self.configuration(host, database)
+        MongoModel.configuration = { 'host' => host, 'database' => database }
     end
     
-    def self.database(name)
-        MongoMapper.database = name
-    end
 end
