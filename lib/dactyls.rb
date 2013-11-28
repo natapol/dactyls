@@ -16,9 +16,9 @@ require 'csv'
 
 require 'sylfy'
 require 'mongomodel'
+require 'rubabel'
 
-
-require 'dactyls/node.rb'
+require 'dactyls/datamodel.rb'
 
 
 module Dactyls

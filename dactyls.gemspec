@@ -25,6 +25,7 @@ Gem::Specification.new do |s|
     
     s.add_dependency "sylfy", ">= 0.0.2"
     s.add_dependency "mongo_mapper", ">= 0.12.0"
+    s.add_dependency "rubabel", ">= 0.4.3"
 
     
 #    s.add_development_dependency "rspec", ">= 2.11"
