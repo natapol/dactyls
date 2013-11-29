@@ -34,6 +34,10 @@ module Dactyls
       
     end
     
+    def find_one(selector = {})
+      self.where(selector)[0]
+    end
+    
   end
   
   class DNA < Node
@@ -91,7 +95,7 @@ module Dactyls
     property :conversionDirection, String,  :required => true, :default => "<=>"
     
     validates_format_of :_id, :with => /\Ainternal.reaction:\S+\Z/, :on => :create, :message => 'wrong id description'
-    validates_format_of :interactionKey, :with => /\A[A-Z]{14}-[A-Z]{8}-[A-Z]{8}-[A-Z]{2}-[A-Z]-[FBRU]\Z/, :on => :create, :message => 'wrong id description'
+    validates_format_of :interactionKey, :with => /\A[A-Z]{14}-[A-Z]{8}[SX][A-Z]{2}-[A-Z]{2}-[BX][A-Z]-[FBRUAZ]\Z/, :on => :create, :message => 'wrong id description'
     validates_inclusion_of :conversionDirection, in: ["=>", "<=", "<=>", "<?>"], message: "wrong direction symbol"
     
   end

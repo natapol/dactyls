@@ -120,94 +120,92 @@ coll = db["node"]
 #end
 
 ###transfer Protein type
-#coll.find({"type" => 'BiochemicalReaction'}).to_a.each do |doc|
-#    if doc['relation']
-#        
-#        obj = Dactyls::Reaction.new()
-#        obj._id = "internal.reaction:#{doc['_id'].split(/_/, 2)[1]}"
-#        obj.names = doc['names']
-#        doc["dataXref"].each {|ref| obj.dataXref << ref["id"]}
-#        obj.spontaneous = doc['spontaneous']
-#        obj.functional = doc['functional']
-#        obj.conversionDirection = doc['conversionDirection'] == "=" ? "<=>" : doc['conversionDirection']
-#        
-#        participant = {"missing" => []}
-#        
-#        relaobjs = []
-#        doc['relation'].each do |rela|
-#            
-#            if ["left", "right"].include?(rela["type"])
-#                datagot = coll.find_one({"_id" => rela["relationWith"]})["inchiKey"]
-#                if datagot
-#                    participant[rela["type"]] ||= []
-#                    participant[rela["type"]].push(datagot)
-#                else
-#                    participant["missing"].push(rela["relationWith"])
-#                end
-#            end
-#            
-#            case rela["type"]
-#            when "enzyme"
-#                new = IdConvert.where({"old" => rela["relationWith"]})[0]
-#                if new
-#                    relaobjs.push(Dactyls::Catalyse.new(a: new.new, b: obj._id))
-#                else
-#                    relaobjs.push(Dactyls::Catalyse.new(a: "internal.protein:#{rela["relationWith"].split(/_/,2)[1]}", b: obj._id))
-#                    puts "unknownconvertfor\t#{rela["relationWith"]}"
-#                end
-#                
-#            when "left"
-#                new = IdConvert.where({"old" => rela["relationWith"]})[0]
-#                if new
-#                    relaobjs.push(Dactyls::LeftOf.new(a: new.new, b: obj._id, coefficient: rela["coefficient"]))
-#                else
-#                    relaobjs.push(Dactyls::LeftOf.new(a: rela["relationWith"], b: obj._id, coefficient: rela["coefficient"]))
-#                    puts "unknownconvertfor\t#{rela["relationWith"]}"
-#                end
-#            when "right"
-#                new = IdConvert.where({"old" => rela["relationWith"]})[0]
-#                if new
-#                    relaobjs.push(Dactyls::RightOf.new(a: new.new, b: obj._id, coefficient: rela["coefficient"]))
-#                else
-#                    relaobjs.push(Dactyls::RightOf.new(a: rela["relationWith"], b: obj._id, coefficient: rela["coefficient"]))
-#                    puts "unknownconvertfor\t#{rela["relationWith"]}"
-#                end
-#            end
-#            
-#        end
-#        
-#        if participant["missing"].empty?
-#            obj.interactionKey = Sylfy::Utils::reactionkey(participant["left"], participant["right"], obj.conversionDirection)
-#        end
-#        
-#        #p relaobjs
-#        #p obj._id
-#        #p obj
-#        #p obj.valid?
-#        #
-#        if obj.valid?
-#            relaobjs.each do |relaobj|
-#                if relaobj.valid?
-#                    relaobj.save
-#                else
-#                    puts relaobj.inspect
-#                    puts relaobj.errors.full_messages
-#                end
-#            end
-#            IdConvert.new(:old => doc['_id'], :new => obj._id).save
-#            obj.save
-#        else
-#            puts obj.errors.full_messages
-#            puts obj._id
-#            puts doc.inspect
-#            puts obj.inspect
-#            puts
-#        end
-#    else
-#        puts "No relation"
-#        puts doc.inspect
-#    end
-#end
+coll.find({"type" => 'BiochemicalReaction'}).to_a.each do |doc|
+    if doc['relation']
+        
+        obj = Dactyls::Reaction.new()
+        obj._id = "internal.reaction:#{doc['_id'].split(/_/, 2)[1]}"
+        obj.names = doc['names']
+        doc["dataXref"].each {|ref| obj.dataXref << ref["id"]}
+        obj.spontaneous = doc['spontaneous']
+        obj.functional = doc['functional']
+        obj.conversionDirection = doc['conversionDirection'] == "=" ? "<=>" : doc['conversionDirection']
+        
+        participant = {"missing" => []}
+        
+        relaobjs = []
+        doc['relation'].each do |rela|
+            
+            if ["left", "right"].include?(rela["type"])
+                datagot = coll.find_one({"_id" => rela["relationWith"]})["inchiKey"]
+                if datagot
+                    participant[rela["type"]] ||= []
+                    participant[rela["type"]].push(datagot)
+                else
+                    participant["missing"].push(rela["relationWith"])
+                end
+            end
+            
+            case rela["type"]
+            when "enzyme"
+                new = IdConvert.where({"old" => rela["relationWith"]})[0]
+                if new
+                    relaobjs.push(Dactyls::Catalyse.new(a: new.new, b: obj._id))
+                else
+                    relaobjs.push(Dactyls::Catalyse.new(a: "internal.protein:#{rela["relationWith"].split(/_/,2)[1]}", b: obj._id))
+                    puts "unknownconvertfor\t#{rela["relationWith"]}"
+                end
+                
+            when "left"
+                new = IdConvert.where({"old" => rela["relationWith"]})[0]
+                if new
+                    relaobjs.push(Dactyls::LeftOf.new(a: new.new, b: obj._id, coefficient: rela["coefficient"]))
+                else
+                    relaobjs.push(Dactyls::LeftOf.new(a: rela["relationWith"], b: obj._id, coefficient: rela["coefficient"]))
+                    puts "unknownconvertfor\t#{rela["relationWith"]}"
+                end
+            when "right"
+                new = IdConvert.where({"old" => rela["relationWith"]})[0]
+                if new
+                    relaobjs.push(Dactyls::RightOf.new(a: new.new, b: obj._id, coefficient: rela["coefficient"]))
+                else
+                    relaobjs.push(Dactyls::RightOf.new(a: rela["relationWith"], b: obj._id, coefficient: rela["coefficient"]))
+                    puts "unknownconvertfor\t#{rela["relationWith"]}"
+                end
+            end
+            
+        end
+        p obj._id
+        if participant["missing"].empty?
+            obj.interactionKey = Sylfy::Utils::reactionkey(participant["left"], participant["right"], obj.conversionDirection)
+            p participant["left"]
+            p participant["right"]
+            puts obj.interactionKey
+        end
+        
+        if obj.valid?
+            relaobjs.each do |relaobj|
+                if relaobj.valid?
+                    relaobj.save
+                else
+                    puts relaobj.inspect
+                    puts relaobj.errors.full_messages
+                end
+            end
+            IdConvert.new(:old => doc['_id'], :new => obj._id).save
+            obj.save
+        else
+            puts obj.errors.full_messages
+            puts obj._id
+            puts doc.inspect
+            puts obj.inspect
+            puts
+        end
+    else
+        puts "No relation"
+        puts doc.inspect
+    end
+end
     
     
 
@@ -229,10 +227,10 @@ coll = db["node"]
 #    puts obj.errors.full_messages
 #end
 #puts Dactyls::Catalyse.exists?("sasas")
-puts Dactyls::Catalyse.where(:a => "internal.protein:O00154")[0].inspect
-puts Dactyls::Catalyse.where(:a => "internal.protein:O00154")[0].forth[0].inspect
-puts Dactyls::Catalyse.where(:a => "internal.protein:O00154")[0].forth[0].reaction.inspect
-puts Dactyls::Catalyse.where(:a => "internal.protein:O00154")[0].forth[0].substrate.inspect
-puts Dactyls::Catalyse.where(:a => "internal.protein:O00154")[0].forth[0].substrate.participate
+#puts Dactyls::Catalyse.where(:a => "internal.protein:O00154")[0].inspect
+#puts Dactyls::Catalyse.where(:a => "internal.protein:O00154")[0].forth[0].inspect
+#puts Dactyls::Catalyse.where(:a => "internal.protein:O00154")[0].forth[0].reaction.inspect
+#puts Dactyls::Catalyse.where(:a => "internal.protein:O00154")[0].forth[0].substrate.inspect
+#puts Dactyls::Catalyse.where(:a => "internal.protein:O00154")[0].forth[0].substrate.participate
 
 #puts Dactyls::Catalyse.find({'a' => "internal.protein:O00154"})
