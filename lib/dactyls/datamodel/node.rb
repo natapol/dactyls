@@ -24,17 +24,28 @@ module Dactyls
     self.collection_name = 'node'
     property :_id,               String,               :index => true, :required => true, :unique => true #, :format => /internal\.\w+:\d+/
     property :names,             Collection[String],   :index => true, :required => true
-    #property :relation,          Collection[String]
     property :dataXref,          Collection[String],   :index => true
     property :annotation,        Collection[String]
     
     #validates :dataXref, array: { format: {:with => /\Ainternal.ext:\w+\Z/, :on => :create, :message => 'wrong id description'}}
     
-    def relation()
-      
+    def relations()
+      RelateTo.where(:$or => [{:a => _id}, {:b => _id}])
     end
     
-    def find_one(selector = {})
+    def relateTos()
+      relates = []
+      RelateTo.where(:$or => [{:a => _id}, {:b => _id}]).each do |e|
+        if e.a == _id
+          relates.push(Node.find_one(:_id => e.b))
+        else
+          relates.push(Node.find_one(:_id => e.a))
+        end
+      end
+      return relates
+    end
+    
+    def self.find_one(selector = {})
       self.where(selector)[0]
     end
     
@@ -62,6 +73,8 @@ module Dactyls
     
     validates_format_of :_id, :with => /\Ainternal.transcript:\S+\Z/, :on => :create, :message => 'wrong id description'
     
+    property :positions,        Collection[Position]
+    
   end
   
   class Protein < Node
@@ -81,23 +94,53 @@ module Dactyls
     
     def participateIn
       results = []
-      (LeftOf.where(:a => _id) + RightOf.where(:a => _id)).each {|e| results.push(e.reaction)}
+      ParicipateInReaction.where(:a => _id).each {|e| results.push(e.reaction)}
       return results
     end
     
   end
   
-  class Reaction < Node
-    
+  class Conversion < Node
     property :spontaneous,         Boolean, :required => true, :default => false
     property :functional,          Boolean, :required => true, :default => true
     property :interactionKey,      String,  :index => true, :unique => true, :required => true
+    
+    validates_format_of :interactionKey, :with => /\A[A-Z]{14}-[A-Z]{8}[SX][A-Z]{2}-[BX][A-Z]-[A-Z]{2}-[FBRUAZ]\Z/, :on => :create, :message => 'wrong id description'
+
+  end
+  
+  class Reaction < Conversion
+    
+    
     property :conversionDirection, String,  :required => true, :default => "<=>"
     
+    #######################################   AAAAAAAAAAAAAA-BBBBBBBBFvV-HE-CC-D
     validates_format_of :_id, :with => /\Ainternal.reaction:\S+\Z/, :on => :create, :message => 'wrong id description'
-    validates_format_of :interactionKey, :with => /\A[A-Z]{14}-[A-Z]{8}[SX][A-Z]{2}-[A-Z]{2}-[BX][A-Z]-[FBRUAZ]\Z/, :on => :create, :message => 'wrong id description'
     validates_inclusion_of :conversionDirection, in: ["=>", "<=", "<=>", "<?>"], message: "wrong direction symbol"
     
+    def left
+      LeftOf.where(:b => _id)
+    end
+    
+    def right
+      RightOf.where(:b => _id)
+    end
+    
+    
+  end
+  
+  class Transport < Conversion
+   
+    validates_format_of :_id, :with => /\Ainternal.transport:\S+\Z/, :on => :create, :message => 'wrong id description'
+    
+    def import
+      ImportBy.where(:b => _id)
+    end
+    
+    def right
+      ExportBy.where(:b => _id)
+    end
+  
   end
   
 end

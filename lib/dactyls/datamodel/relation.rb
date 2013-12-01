@@ -20,6 +20,10 @@ module Dactyls
         #property :coefficient,       Float
         
         #validates :from, array: { format: {:with => /\Ainternal.[a-z]+:\S+\Z/, :on => :create, :message => 'wrong id description'}}
+        
+        def link?
+            Node.exists?(a) && Node.exists?(b)
+        end
     end
 
     class OriginOf < RelateTo
@@ -31,11 +35,11 @@ module Dactyls
         end
         
         def chromosome()
-            DNA.where(:_id => a)[0]
+            DNA.find(a)
         end
         
         def gene()
-            DNARegion.where(:_id => b)[0]
+            DNARegion.find(b)
         end
     end
     
@@ -52,11 +56,11 @@ module Dactyls
         end
         
         def transcript()
-            Transcript.where(:_id => b)[0]
+            Transcript.find(b)
         end
         
         def gene()
-            DNARegion.where(:_id => a)[0]
+            DNARegion.find(a)
         end
     end
     
@@ -73,11 +77,11 @@ module Dactyls
         end
         
         def transcript()
-            Transcript.where(:_id => a)[0]
+            Transcript.find(a)
         end
         
         def protein()
-            Protein.where(:_id => b)[0]
+            Protein.find(b)
         end
     end
     
@@ -86,7 +90,7 @@ module Dactyls
         validates_format_of :b, :with => /\Ainternal.reaction:\S+\Z/, :on => :create, :message => 'wrong related object'
         
         def forth()
-            LeftOf.where(:b => b) + RightOf.where(:b => b)
+            ParicipateInReaction.where(:b => b)
         end
         
         def back()
@@ -94,11 +98,11 @@ module Dactyls
         end
         
         def reaction()
-            Reaction.where(:_id => b)[0]
+            Reaction.find(b)
         end
         
         def protein()
-            Protein.where(:_id => b)[0]
+            Protein.find(a)
         end
     end
     
@@ -116,11 +120,11 @@ module Dactyls
         end
         
         def substrate()
-            SmallMolecule.where(:_id => a)[0] || Protein.where(:_id => a)[0]
+            SmallMolecule.find(a) || Protein.find(a)
         end
         
         def reaction()
-            Reaction.where(:_id => b)[0]
+            Reaction.find(b)
         end
     end
     
@@ -133,29 +137,34 @@ module Dactyls
         
     end
     
-    #class TransportBy < RelateTo
-    #    validates_format_of :a, :with => /\Ainternal.(protein|complex):\S+\Z/, :on => :create, :message => 'wrong related object'
-    #    validates_format_of :b, :with => /\Ainternal.transport:\S+\Z/, :on => :create, :message => 'wrong related object'
-    #    
-    #    def forth()
-    #        ImportBy.where(:b => b) + ExportBy.where(:b => b)
-    #    end
-    #    
-    #    def back()
-    #        TranslateTo.where(:b => a)
-    #    end
-    #end
-    #
-    #class ParicipateInTransport < ParticipatIn
-    #    validates_format_of :a, :with => /\Ainternal.compound:\S+\Z/, :on => :create, :message => 'wrong related object'
-    #    validates_format_of :b, :with => /\Ainternal.reaction:\S+\Z/, :on => :create, :message => 'wrong related object'
-    #end
-    #
-    #class ImportBy < ParicipateInTransport
-    #    
-    #end
-    #
-    #class ExportBy < ParicipateInTransport
-    #    
-    #end
+    class TransportBy < RelateTo
+        validates_format_of :a, :with => /\Ainternal.(protein|complex):\S+\Z/, :on => :create, :message => 'wrong related object'
+        validates_format_of :b, :with => /\Ainternal.transport:\S+\Z/, :on => :create, :message => 'wrong related object'
+        
+        def back()
+            TranslateTo.where(:b => a)
+        end
+        
+        def transported()
+            SmallMolecule.find(a) || Protein.find(a)
+        end
+        
+        def transport()
+            Transport.find(b)
+        end
+        
+    end
+    
+    class ParicipateInTransport < ParticipatIn
+        validates_format_of :a, :with => /\Ainternal.compound:\S+\Z/, :on => :create, :message => 'wrong related object'
+        validates_format_of :b, :with => /\Ainternal.transport:\S+\Z/, :on => :create, :message => 'wrong related object'
+    end
+    
+    class ImportBy < ParicipateInTransport
+        
+    end
+    
+    class ExportBy < ParicipateInTransport
+        
+    end
 end

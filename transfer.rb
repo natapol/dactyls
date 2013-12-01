@@ -64,6 +64,24 @@ coll = db["node"]
 #    end
 #end
 #
+###transfer Transcript type
+coll.find({"type" => 'RNA'}).to_a.each do |doc|
+  obj = Dactyls::Transcript.new()
+  obj._id = "internal.transcript:#{doc['_id'].split(/_/, 2)[1]}"
+  obj.names = doc['names']
+  obj.dataXref << doc["dataPrimarySource"]["id"]
+  doc["positions"].each {|e| obj.positions << Dactyls::Position.new(:start => e["start"], :stop => e["stop"])}
+    if obj.valid?
+        IdConvert.new(:old => doc['_id'], :new => obj._id).save
+        obj.save
+    else
+        puts doc.inspect
+        puts obj._id
+        puts obj.inspect
+        puts obj.errors.full_messages
+    end
+end
+
 ###transfer Protein type
 #coll.find({"type" => 'Protein'}).to_a.each do |doc|
 #    obj = Dactyls::Protein.new()
@@ -120,117 +138,128 @@ coll = db["node"]
 #end
 
 ###transfer Protein type
-coll.find({"type" => 'BiochemicalReaction'}).to_a.each do |doc|
-    if doc['relation']
-        
-        obj = Dactyls::Reaction.new()
-        obj._id = "internal.reaction:#{doc['_id'].split(/_/, 2)[1]}"
-        obj.names = doc['names']
-        doc["dataXref"].each {|ref| obj.dataXref << ref["id"]}
-        obj.spontaneous = doc['spontaneous']
-        obj.functional = doc['functional']
-        obj.conversionDirection = doc['conversionDirection'] == "=" ? "<=>" : doc['conversionDirection']
-        
-        participant = {"missing" => []}
-        
-        relaobjs = []
-        doc['relation'].each do |rela|
-            
-            if ["left", "right"].include?(rela["type"])
-                datagot = coll.find_one({"_id" => rela["relationWith"]})["inchiKey"]
-                if datagot
-                    participant[rela["type"]] ||= []
-                    participant[rela["type"]].push(datagot)
-                else
-                    participant["missing"].push(rela["relationWith"])
-                end
-            end
-            
-            case rela["type"]
-            when "enzyme"
-                new = IdConvert.where({"old" => rela["relationWith"]})[0]
-                if new
-                    relaobjs.push(Dactyls::Catalyse.new(a: new.new, b: obj._id))
-                else
-                    relaobjs.push(Dactyls::Catalyse.new(a: "internal.protein:#{rela["relationWith"].split(/_/,2)[1]}", b: obj._id))
-                    puts "unknownconvertfor\t#{rela["relationWith"]}"
-                end
-                
-            when "left"
-                new = IdConvert.where({"old" => rela["relationWith"]})[0]
-                if new
-                    relaobjs.push(Dactyls::LeftOf.new(a: new.new, b: obj._id, coefficient: rela["coefficient"]))
-                else
-                    relaobjs.push(Dactyls::LeftOf.new(a: rela["relationWith"], b: obj._id, coefficient: rela["coefficient"]))
-                    puts "unknownconvertfor\t#{rela["relationWith"]}"
-                end
-            when "right"
-                new = IdConvert.where({"old" => rela["relationWith"]})[0]
-                if new
-                    relaobjs.push(Dactyls::RightOf.new(a: new.new, b: obj._id, coefficient: rela["coefficient"]))
-                else
-                    relaobjs.push(Dactyls::RightOf.new(a: rela["relationWith"], b: obj._id, coefficient: rela["coefficient"]))
-                    puts "unknownconvertfor\t#{rela["relationWith"]}"
-                end
-            end
-            
-        end
-        p obj._id
-        if participant["missing"].empty?
-            obj.interactionKey = Sylfy::Utils::reactionkey(participant["left"], participant["right"], obj.conversionDirection)
-            p participant["left"]
-            p participant["right"]
-            puts obj.interactionKey
-        end
-        
-        if obj.valid?
-            relaobjs.each do |relaobj|
-                if relaobj.valid?
-                    relaobj.save
-                else
-                    puts relaobj.inspect
-                    puts relaobj.errors.full_messages
-                end
-            end
-            IdConvert.new(:old => doc['_id'], :new => obj._id).save
-            obj.save
-        else
-            puts obj.errors.full_messages
-            puts obj._id
-            puts doc.inspect
-            puts obj.inspect
-            puts
-        end
-    else
-        puts "No relation"
-        puts doc.inspect
-    end
-end
-    
-    
-
-#obj = Dactyls::SmallMolecule.new()
-#obj._id = "internal.compound:001055"
-#obj.names = ["hydron", "H+", "H(+)", "hydrogen(1+)", "hydron"]
-#obj.dataXref = ["obo.chebi:CHEBI%3A15378", "internal.hmr:H+"]
-#obj.inchi = "InChI=1S/p+1"
-#obj.inchiKey = "GPRLSGONYQIRFK-UHFFFAOYSA-N"
-#obj.formula = "H"
-#obj.csmiles = "H"
-#
-#if obj.valid?
-#    IdConvert.new(:old => "internal.compound:001055", :new => "internal.compound:001055").save
-#    obj.save
-#else
-#    puts obj._id
-#    puts obj.inspect
-#    puts obj.errors.full_messages
+#coll.find({"type" => 'BiochemicalReaction'}).to_a.each do |doc|
+#    if doc['relation']
+#        
+#        obj = Dactyls::Reaction.new()
+#        obj._id = "internal.reaction:#{doc['_id'].split(/_/, 2)[1]}"
+#        obj.names = doc['names']
+#        doc["dataXref"].each {|ref| obj.dataXref << ref["id"]}
+#        obj.spontaneous = doc['spontaneous']
+#        obj.functional = doc['functional']
+#        obj.conversionDirection = doc['conversionDirection'] == "=" ? "<=>" : doc['conversionDirection']
+#        
+#        participant = {"missing" => []}
+#        
+#        relaobjs = []
+#        doc['relation'].each do |rela|
+#            
+#            if ["left", "right"].include?(rela["type"])
+#                datagot = coll.find_one({"_id" => rela["relationWith"]})["inchiKey"]
+#                if datagot
+#                    participant[rela["type"]] ||= []
+#                    participant[rela["type"]].push(datagot)
+#                else
+#                    participant["missing"].push(rela["relationWith"])
+#                end
+#            end
+#            
+#            case rela["type"]
+#            when "enzyme"
+#                new = IdConvert.where({"old" => rela["relationWith"]})[0]
+#                if new
+#                    relaobjs.push(Dactyls::Catalyse.new(a: new.new, b: obj._id))
+#                else
+#                    relaobjs.push(Dactyls::Catalyse.new(a: "internal.protein:#{rela["relationWith"].split(/_/,2)[1]}", b: obj._id))
+#                    puts "unknownconvertfor\t#{rela["relationWith"]}"
+#                end
+#                
+#            when "left"
+#                new = IdConvert.where({"old" => rela["relationWith"]})[0]
+#                if new
+#                    relaobjs.push(Dactyls::LeftOf.new(a: new.new, b: obj._id, coefficient: rela["coefficient"]))
+#                else
+#                    relaobjs.push(Dactyls::LeftOf.new(a: rela["relationWith"], b: obj._id, coefficient: rela["coefficient"]))
+#                    puts "unknownconvertfor\t#{rela["relationWith"]}"
+#                end
+#            when "right"
+#                new = IdConvert.where({"old" => rela["relationWith"]})[0]
+#                if new
+#                    relaobjs.push(Dactyls::RightOf.new(a: new.new, b: obj._id, coefficient: rela["coefficient"]))
+#                else
+#                    relaobjs.push(Dactyls::RightOf.new(a: rela["relationWith"], b: obj._id, coefficient: rela["coefficient"]))
+#                    puts "unknownconvertfor\t#{rela["relationWith"]}"
+#                end
+#            end
+#            
+#        end
+#        p obj._id
+#        if participant["missing"].empty?
+#            obj.interactionKey = Sylfy::Utils::reactionkey(participant["left"], participant["right"], obj.conversionDirection)
+#        end
+#        
+#        if obj.valid?
+#            relaobjs.each do |relaobj|
+#                if relaobj.valid?
+#                    relaobj.save
+#                else
+#                    puts relaobj.inspect
+#                    puts relaobj.errors.full_messages
+#                end
+#            end
+#            IdConvert.new(:old => doc['_id'], :new => obj._id).save
+#            obj.save
+#        else
+#            puts obj.errors.full_messages
+#            puts obj._id
+#            puts doc.inspect
+#            puts obj.inspect
+#            puts
+#        end
+#    else
+#        puts "No relation"
+#        puts doc.inspect
+#    end
 #end
-#puts Dactyls::Catalyse.exists?("sasas")
-#puts Dactyls::Catalyse.where(:a => "internal.protein:O00154")[0].inspect
-#puts Dactyls::Catalyse.where(:a => "internal.protein:O00154")[0].forth[0].inspect
-#puts Dactyls::Catalyse.where(:a => "internal.protein:O00154")[0].forth[0].reaction.inspect
-#puts Dactyls::Catalyse.where(:a => "internal.protein:O00154")[0].forth[0].substrate.inspect
-#puts Dactyls::Catalyse.where(:a => "internal.protein:O00154")[0].forth[0].substrate.participate
+    
+###transfer Relation type
+#db["relation"].find({"type" => 'dnaSource'}).to_a.each do |doc|
+#  source = IdConvert.where({"old" => doc["source"]})[0]
+#  with = IdConvert.where({"old" => doc["relationWith"]})[0]
+#  rela = Dactyls::OriginOf.new(:a => with.new, :b => source.new)
+#  if rela.valid?
+#    if rela.link?
+#      rela.save
+#    else
+#      puts "noLink\t#{rela.inspect}"
+#    end
+#  else
+#    puts "noValid\t#{rela.inspect}"
+#  end
+#end
 
-#puts Dactyls::Catalyse.find({'a' => "internal.protein:O00154"})
+db["relation"].find({"type" => 'dnaRegionSource'}).to_a.each do |doc|
+  rela = Dactyls::TranscribeTo.new(:a => "internal.gene:#{doc["relationWith"].split(/_/,2)[1]}", :b => "internal.transcript:#{doc["source"].split(/_/,2)[1]}")
+  if rela.valid?
+    if rela.link?
+      rela.save
+    else
+      puts "noLink\t#{rela.inspect}"
+    end
+  else
+    puts "noValid\t#{rela.inspect}"
+  end
+end
+
+#db["relation"].find({"type" => 'rnaSource'}).to_a.each do |doc|
+#  rela = Dactyls::TranslateTo.new(:a => "internal.transcript:#{doc["relationWith"].split(/_/,2)[1]}", :b => "internal.protein:#{doc["source"].split(/_/,2)[1]}")
+#  if rela.valid?
+#    if rela.link?
+#      rela.save
+#    else
+#      puts "noLink\t#{rela.inspect}"
+#    end
+#  else
+#    puts "noValid\t#{rela.inspect}"
+#  end
+#end
