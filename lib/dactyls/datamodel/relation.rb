@@ -24,7 +24,7 @@ class Array
         end
         return result
     end
-
+end
 
 module Dactyls
     
