@@ -7,6 +7,25 @@
 # Documentation: Natapol Pornputtapong (RDoc'd and embellished by William Webber)
 #
 
+class Array
+    
+    def forth
+        result = []
+        self.each do |entry|
+            result + entry.forth if entry.is_a?(Dactyls::RelateTo)
+        end
+        return result
+    end
+    
+    def back
+        result = []
+        self.each do |entry|
+            result + entry.back if entry.is_a?(Dactyls::RelateTo)
+        end
+        return result
+    end
+
+
 module Dactyls
     
     class RelateTo < MongoModel::Document
