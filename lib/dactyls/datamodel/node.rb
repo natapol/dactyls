@@ -49,6 +49,10 @@ module Dactyls
       self.where(selector)[0]
     end
     
+    def self.names(query)
+      self.where(:names => query).to_a
+    end
+    
   end
   
   class DNA < Node
@@ -67,6 +71,13 @@ module Dactyls
     
     validates_format_of :_id, :with => /\Ainternal.gene:\S+\Z/, :on => :create, :message => 'wrong id description'
     
+    def transcribe()
+      results = []
+      TranscribeTo.where(:a => _id).each {|e| results.push(e.transcript)}
+      return results
+    end
+    
+    
   end
   
   class Transcript < Node
@@ -74,6 +85,12 @@ module Dactyls
     validates_format_of :_id, :with => /\Ainternal.transcript:\S+\Z/, :on => :create, :message => 'wrong id description'
     
     property :positions,        Collection[Position]
+    
+    def translate()
+      results = []
+      TranslateTo.where(:a => _id).each {|e| results.push(e.protein)}
+      return results
+    end
     
   end
   
