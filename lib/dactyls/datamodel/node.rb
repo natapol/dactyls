@@ -7,6 +7,8 @@
 # Documentation: Natapol Pornputtapong (RDoc'd and embellished by William Webber)
 #
 
+#require './dactyls/lib/dactyls.rb'
+#Dactyls.configuration("129.16.106.203", "new")
 
 module Dactyls
   
@@ -48,11 +50,11 @@ module Dactyls
     def self.find_one(selector = {})
       self.where(selector)[0]
     end
+    #scope :published, where(:published_at.ne => nil)
+    scope :names,  lambda { |name| where('names' => name) }
+    scope :names_like,  lambda { |name| where('names' => {'$regex' => name}) }
     
-    def self.names(query)
-      self.where(:names => query).to_a
-    end
-    
+    scope :dataXref,  lambda { |xref| where('dataXref' => xref) }
   end
   
   class DNA < Node
@@ -63,6 +65,7 @@ module Dactyls
     validates_format_of :_id, :with => /\Ainternal.chr:\S+\Z/, :on => :create, :message => 'wrong id description'
     validates_format_of :bioSource, :with => /\Ataxonomy:\d+\Z/, :on => :create, :message => 'wrong taxonomy id', :allow_blank => true
     
+    scope :names_like,  lambda { |name| where('names' => {'$regex' => name}) }
   end
   
   class DNARegion < Node
@@ -77,6 +80,7 @@ module Dactyls
       return results
     end
     
+    scope :names_like,  lambda { |name| where('names' => {'$regex' => name}) }
     
   end
   
@@ -97,7 +101,7 @@ module Dactyls
   class Protein < Node
     
     validates_format_of :_id, :with => /\Ainternal.protein:\S+\Z/, :on => :create, :message => 'wrong id description'
-    
+    scope :names_like,  lambda { |name| where('names' => {'$regex' => name}) }
   end
   
   class SmallMolecule < Node
@@ -115,6 +119,11 @@ module Dactyls
       return results
     end
     
+    scope :names_like,  lambda { |name| where('names' => {'$regex' => name}) }
+    scope :csmiles,  lambda { |smile| where('csmiles' => {'$regex' => smile}) }
+    scope :inchiKey,  lambda { |key| where('inchiKey' => {'$regex' => key}) }
+    scope :inchi,  lambda { |inchi| where('inchi' => inchi) }
+    
   end
   
   class Conversion < Node
@@ -123,7 +132,9 @@ module Dactyls
     property :interactionKey,      String,  :index => true, :unique => true, :required => true
     
     validates_format_of :interactionKey, :with => /\A[A-Z]{14}-[A-Z]{8}[SX][A-Z]{2}-[BX][A-Z]-[A-Z]{2}-[FBRUAZ]\Z/, :on => :create, :message => 'wrong id description'
-
+    
+    scope :interactionKey,  lambda { |key| where('interactionKey' => {'$regex' => key}) }
+    
   end
   
   class Reaction < Conversion
@@ -143,7 +154,9 @@ module Dactyls
       RightOf.where(:b => _id)
     end
     
-    
+    def participants
+      
+    end
   end
   
   class Transport < Conversion

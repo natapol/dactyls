@@ -54,11 +54,11 @@ module Dactyls
         end
         
         def chromosome()
-            DNA.find(a)
+            DNA.where(:_id => a)[0]
         end
         
         def gene()
-            DNARegion.find(b)
+            DNARegion.where(:_id => b)[0]
         end
     end
     
@@ -75,11 +75,11 @@ module Dactyls
         end
         
         def transcript()
-            Transcript.find(b)
+            Transcript.where(:_id => b)[0]
         end
         
         def gene()
-            DNARegion.find(a)
+            DNARegion.where(:_id => a)[0]
         end
     end
     
@@ -96,11 +96,11 @@ module Dactyls
         end
         
         def transcript()
-            Transcript.find(a)
+            Transcript.where(:_id => a)[0]
         end
         
         def protein()
-            Protein.find(b)
+            Protein.where(:_id => b)[0]
         end
     end
     
@@ -117,11 +117,11 @@ module Dactyls
         end
         
         def reaction()
-            Reaction.find(b)
+            Reaction.where(:_id => b)[0]
         end
         
         def protein()
-            Protein.find(a)
+            Protein.where(:_id => a)[0]
         end
     end
     
@@ -139,11 +139,11 @@ module Dactyls
         end
         
         def substrate()
-            SmallMolecule.find(a) || Protein.find(a)
+            SmallMolecule.where(:_id => a)[0] || Protein.where(:_id => a)[0]
         end
         
         def reaction()
-            Reaction.find(b)
+            Reaction.where(:_id => b)[0]
         end
     end
     
@@ -165,11 +165,11 @@ module Dactyls
         end
         
         def transported()
-            SmallMolecule.find(a) || Protein.find(a)
+            SmallMolecule.where(:_id => a)[0] || Protein.where(:_id => a)[0]
         end
         
         def transport()
-            Transport.find(b)
+            Transport.where(:_id => b)[0]
         end
         
     end
