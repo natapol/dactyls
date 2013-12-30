@@ -50,11 +50,15 @@ module Dactyls
     def self.find_one(selector = {})
       self.where(selector)[0]
     end
-    #scope :published, where(:published_at.ne => nil)
-    scope :names,  lambda { |name| where('names' => name) }
-    scope :names_like,  lambda { |name| where('names' => {'$regex' => name}) }
     
-    scope :dataXref,  lambda { |xref| where('dataXref' => xref) }
+    def self.names(*names)
+      return self.where('names' => {:$in => names.flatten}).to_a
+    end
+    
+    def self.dataXref(*xref)
+      return self.where('dataXref' => {:$in => names.flatten}).to_a
+    end
+    
   end
   
   class DNA < Node
@@ -65,7 +69,6 @@ module Dactyls
     validates_format_of :_id, :with => /\Ainternal.chr:\S+\Z/, :on => :create, :message => 'wrong id description'
     validates_format_of :bioSource, :with => /\Ataxonomy:\d+\Z/, :on => :create, :message => 'wrong taxonomy id', :allow_blank => true
     
-    scope :names_like,  lambda { |name| where('names' => {'$regex' => name}) }
   end
   
   class DNARegion < Node
@@ -79,8 +82,6 @@ module Dactyls
       TranscribeTo.where(:a => _id).each {|e| results.push(e.transcript)}
       return results
     end
-    
-    scope :names_like,  lambda { |name| where('names' => {'$regex' => name}) }
     
   end
   
@@ -101,7 +102,7 @@ module Dactyls
   class Protein < Node
     
     validates_format_of :_id, :with => /\Ainternal.protein:\S+\Z/, :on => :create, :message => 'wrong id description'
-    scope :names_like,  lambda { |name| where('names' => {'$regex' => name}) }
+    
   end
   
   class SmallMolecule < Node
@@ -119,10 +120,21 @@ module Dactyls
       return results
     end
     
-    scope :names_like,  lambda { |name| where('names' => {'$regex' => name}) }
-    scope :csmiles,  lambda { |smile| where('csmiles' => {'$regex' => smile}) }
-    scope :inchiKey,  lambda { |key| where('inchiKey' => {'$regex' => key}) }
-    scope :inchi,  lambda { |inchi| where('inchi' => inchi) }
+    def self.csmiles(*smiles)
+      return self.where('csmiles' => {:$in => smiles.flatten}).to_a
+    end
+    
+    def self.formula(*formula)
+      return self.where('formula' => {:$in => formula.flatten}).to_a
+    end
+    
+    def self.inchi(*inchis)
+      return self.where('inchi' => {:$in => inchis.flatten}).to_a
+    end
+    
+    def self.inchiKey(*inchiKeys)
+      return self.where('inchiKey' => {:$in => inchiKeys.flatten}).to_a
+    end
     
   end
   
@@ -133,7 +145,10 @@ module Dactyls
     
     validates_format_of :interactionKey, :with => /\A[A-Z]{14}-[A-Z]{8}[SX][A-Z]{2}-[BX][A-Z]-[A-Z]{2}-[FBRUAZ]\Z/, :on => :create, :message => 'wrong id description'
     
-    scope :interactionKey,  lambda { |key| where('interactionKey' => {'$regex' => key}) }
+    #scope :interactionKey,  lambda { |key| where('interactionKey' => {'$regex' => key}) }
+    def self.interactionKey(*interactionKeys)
+      return self.where('interactionKey' => {:$in => interactionKeys.flatten}).to_a
+    end
     
   end
   
@@ -154,9 +169,7 @@ module Dactyls
       RightOf.where(:b => _id)
     end
     
-    def participants
-      
-    end
+    alias :reactionKey :interactionKey
   end
   
   class Transport < Conversion
