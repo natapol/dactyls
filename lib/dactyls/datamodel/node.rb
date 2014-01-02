@@ -7,6 +7,9 @@
 # Documentation: Natapol Pornputtapong (RDoc'd and embellished by William Webber)
 #
 
+#require './dactyls/lib/dactyls.rb'
+#Dactyls.configuration("129.16.106.203", "new")
+
 module Dactyls
   
   INTERNALPATTERN = "\S+"
@@ -48,8 +51,12 @@ module Dactyls
       self.where(selector)[0]
     end
     
-    def self.names(query)
-      self.where(:names => query).to_a
+    def self.names(*names)
+      return self.where('names' => {:$in => names.flatten}).to_a
+    end
+    
+    def self.dataXref(*xref)
+      return self.where('dataXref' => {:$in => names.flatten}).to_a
     end
     
   end
@@ -75,7 +82,6 @@ module Dactyls
       TranscribeTo.where(:a => _id).each {|e| results.push(e.transcript)}
       return results
     end
-    
     
   end
   
@@ -114,6 +120,22 @@ module Dactyls
       return results
     end
     
+    def self.csmiles(*smiles)
+      return self.where('csmiles' => {:$in => smiles.flatten}).to_a
+    end
+    
+    def self.formula(*formula)
+      return self.where('formula' => {:$in => formula.flatten}).to_a
+    end
+    
+    def self.inchi(*inchis)
+      return self.where('inchi' => {:$in => inchis.flatten}).to_a
+    end
+    
+    def self.inchiKey(*inchiKeys)
+      return self.where('inchiKey' => {:$in => inchiKeys.flatten}).to_a
+    end
+    
   end
   
   class Conversion < Node
@@ -122,7 +144,12 @@ module Dactyls
     property :interactionKey,      String,  :index => true, :unique => true, :required => true
     
     validates_format_of :interactionKey, :with => /\A[A-Z]{14}-[A-Z]{8}[SX][A-Z]{2}-[BX][A-Z]-[A-Z]{2}-[FBRUAZ]\Z/, :on => :create, :message => 'wrong id description'
-
+    
+    #scope :interactionKey,  lambda { |key| where('interactionKey' => {'$regex' => key}) }
+    def self.interactionKey(*interactionKeys)
+      return self.where('interactionKey' => {:$in => interactionKeys.flatten}).to_a
+    end
+    
   end
   
   class Reaction < Conversion
@@ -142,7 +169,7 @@ module Dactyls
       RightOf.where(:b => _id)
     end
     
-    
+    alias :reactionKey :interactionKey
   end
   
   class Transport < Conversion
