@@ -7,7 +7,6 @@
 # Documentation: Natapol Pornputtapong (RDoc'd and embellished by William Webber)
 #
 
-
 module Dactyls
   
   INTERNALPATTERN = "\S+"
@@ -131,7 +130,7 @@ module Dactyls
     
     property :conversionDirection, String,  :required => true, :default => "<=>"
     
-    #######################################   AAAAAAAAAAAAAA-BBBBBBBBFvV-HE-CC-D
+    #######################################   AAAAAAAAAAAAAA-BBBBBBBBFvV-HE-D
     validates_format_of :_id, :with => /\Ainternal.reaction:\S+\Z/, :on => :create, :message => 'wrong id description'
     validates_inclusion_of :conversionDirection, in: ["=>", "<=", "<=>", "<?>"], message: "wrong direction symbol"
     
