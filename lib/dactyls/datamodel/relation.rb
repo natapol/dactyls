@@ -7,25 +7,6 @@
 # Documentation: Natapol Pornputtapong (RDoc'd and embellished by William Webber)
 #
 
-class Array
-    
-    def forth
-        result = []
-        self.each do |entry|
-            result + entry.forth if entry.is_a?(Dactyls::RelateTo)
-        end
-        return result
-    end
-    
-    def back
-        result = []
-        self.each do |entry|
-            result + entry.back if entry.is_a?(Dactyls::RelateTo)
-        end
-        return result
-    end
-end
-
 module Dactyls
     
     class RelateTo < MongoModel::Document
@@ -125,11 +106,11 @@ module Dactyls
         end
     end
     
-    class ParticipatIn < RelateTo
+    class ParticipateIn < RelateTo
         property :coefficient,       Float,  :required => true, :default => 1.0
     end
     
-    class ParicipateInReaction < ParticipatIn
+    class ParicipateInReaction < ParticipateIn
         
         validates_format_of :a, :with => /\Ainternal.(compound|protein):\S+\Z/, :on => :create, :message => 'wrong related object'
         validates_format_of :b, :with => /\Ainternal.reaction:\S+\Z/, :on => :create, :message => 'wrong related object'

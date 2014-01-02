@@ -10,6 +10,39 @@
 require 'dactyls/datamodel/node'
 require 'dactyls/datamodel/relation'
 
+module Dactyls
+  class Results < Array
+    def method_missing(m, *args, &block)
+      results = Self.new()
+      nomethod = true
+      self.each do |item|
+        if item.public_method_defined?(m)
+          nomethod = false
+          results.push(item.send(m))
+        end
+      end
+      
+      if nomethod
+        raise NoMethodError "undefined method `#{m}' for #{self}:Dactyls::Results"
+      else
+        return results
+      end
+      
+    end
+  end
+end
+
+
+
+module MongoModel
+  class Scope
+    def to_r()  
+      Dactyls::Results.new(self.to_a)
+    end
+  end
+end
+
+
 class ArrayValidator < ActiveModel::EachValidator
   def validate_each(record, attribute, values)
     [values].flatten.each do |value|

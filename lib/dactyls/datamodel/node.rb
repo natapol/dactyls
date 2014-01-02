@@ -48,15 +48,19 @@ module Dactyls
     end
     
     def self.find_one(selector = {})
-      self.where(selector)[0]
+      self.limit(1).where(selector)[0]
     end
     
     def self.names(*names)
-      return self.where('names' => {:$in => names.flatten}).to_a
+      return self.where('names' => {:$in => names.flatten}).to_r
     end
     
-    def self.dataXref(*xref)
-      return self.where('dataXref' => {:$in => names.flatten}).to_a
+    def self.dataXref(*xrefs)
+      return self.where('dataXref' => {:$in => xrefs.flatten}).to_r
+    end
+    
+    def self._id(*ids)
+      return self.where('_id' => {:$in => ids.flatten}).to_r
     end
     
   end
@@ -121,19 +125,19 @@ module Dactyls
     end
     
     def self.csmiles(*smiles)
-      return self.where('csmiles' => {:$in => smiles.flatten}).to_a
+      return self.where('csmiles' => {:$in => smiles.flatten}).to_r
     end
     
     def self.formula(*formula)
-      return self.where('formula' => {:$in => formula.flatten}).to_a
+      return self.where('formula' => {:$in => formula.flatten}).to_r
     end
     
     def self.inchi(*inchis)
-      return self.where('inchi' => {:$in => inchis.flatten}).to_a
+      return self.where('inchi' => {:$in => inchis.flatten}).to_r
     end
     
     def self.inchiKey(*inchiKeys)
-      return self.where('inchiKey' => {:$in => inchiKeys.flatten}).to_a
+      return self.where('inchiKey' => {:$in => inchiKeys.flatten}).to_r
     end
     
   end
@@ -147,7 +151,7 @@ module Dactyls
     
     #scope :interactionKey,  lambda { |key| where('interactionKey' => {'$regex' => key}) }
     def self.interactionKey(*interactionKeys)
-      return self.where('interactionKey' => {:$in => interactionKeys.flatten}).to_a
+      return self.where('interactionKey' => {:$in => interactionKeys.flatten}).to_r
     end
     
   end
@@ -162,14 +166,13 @@ module Dactyls
     validates_inclusion_of :conversionDirection, in: ["=>", "<=", "<=>", "<?>"], message: "wrong direction symbol"
     
     def left
-      LeftOf.where(:b => _id)
+      LeftOf.where(:b => _id).to_r
     end
     
     def right
-      RightOf.where(:b => _id)
+      RightOf.where(:b => _id).to_r
     end
     
-    alias :reactionKey :interactionKey
   end
   
   class Transport < Conversion
@@ -177,11 +180,11 @@ module Dactyls
     validates_format_of :_id, :with => /\Ainternal.transport:\S+\Z/, :on => :create, :message => 'wrong id description'
     
     def import
-      ImportBy.where(:b => _id)
+      ImportBy.where(:b => _id).to_r
     end
     
     def right
-      ExportBy.where(:b => _id)
+      ExportBy.where(:b => _id).to_r
     end
   
   end
