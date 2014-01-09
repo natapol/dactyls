@@ -141,14 +141,21 @@ module Dactyls
       return results
     end
     
-    #def converse
-    #  results = Dactyls::Results.new()
-    #  self.LeftOf.where(:a => _id).each do |e|
-    #    e.reaction.rigth.each do |comp|
-    #      
-    #    end
-    #  end
-    #end
+    def converse
+      results = Dactyls::Results.new()
+      self.LeftOf.where(:a => _id).each do |e|
+        e.reaction.pair.each do |pair|
+          results.push(pair[1] if pair[0] == self)
+        end
+      end
+      self.RightOf.where(:a => _id).each do |e|
+        e.reaction.pair.each do |pair|
+          results.push(pair[0] if pair[1] == self)
+        end
+      end
+      
+      return results
+    end
   end
   
   class Conversion < Node
