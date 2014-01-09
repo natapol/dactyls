@@ -145,12 +145,12 @@ module Dactyls
       results = Dactyls::Results.new()
       self.LeftOf.where(:a => _id).each do |e|
         e.reaction.pair.each do |pair|
-          results.push(pair[1] if pair[0] == self)
+          results.push(pair[1]) if pair[0] == self
         end
       end
       self.RightOf.where(:a => _id).each do |e|
         e.reaction.pair.each do |pair|
-          results.push(pair[0] if pair[1] == self)
+          results.push(pair[0]) if pair[1] == self
         end
       end
       
@@ -217,6 +217,14 @@ module Dactyls
       end
       
       return result
+    end
+    
+    def export?
+      sub_left = []
+      sub_right = []
+      self.left.each {|e| sub_left.push(e.inchiKey)}
+      self.right.each {|e| sub_right.push(e.inchiKey)}
+      return !(sub_left & sub_right).empty?
     end
     
   end
