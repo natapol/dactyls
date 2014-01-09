@@ -135,7 +135,7 @@ module Dactyls
       return self.where('inchiKey' => {:$in => inchiKeys.flatten}).to_r
     end
     
-    def participateIn
+    def participate
       results = Dactyls::Results.new()
       ParticipateInReaction.where(:a => _id).each {|e| results.push(e.reaction)}
       return results
