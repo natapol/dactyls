@@ -9,6 +9,7 @@
 
 #require './dactyls/lib/dactyls.rb'
 #Dactyls.configuration("129.16.106.203", "new")
+#Dactyls::Reaction._id("internal.reaction:HMR_0299")
 
 module Dactyls
   
@@ -118,12 +119,6 @@ module Dactyls
     
     validates_format_of :_id, :with => /\Ainternal.compound:\S+\Z/, :on => :create, :message => 'wrong id description'
     
-    def participateIn
-      results = []
-      ParicipateInReaction.where(:a => _id).each {|e| results.push(e.reaction)}
-      return results
-    end
-    
     def self.csmiles(*smiles)
       return self.where('csmiles' => {:$in => smiles.flatten}).to_r
     end
@@ -140,6 +135,20 @@ module Dactyls
       return self.where('inchiKey' => {:$in => inchiKeys.flatten}).to_r
     end
     
+    def participateIn
+      results = Dactyls::Results.new()
+      ParticipateInReaction.where(:a => _id).each {|e| results.push(e.reaction)}
+      return results
+    end
+    
+    #def converse
+    #  results = Dactyls::Results.new()
+    #  self.LeftOf.where(:a => _id).each do |e|
+    #    e.reaction.rigth.each do |comp|
+    #      
+    #    end
+    #  end
+    #end
   end
   
   class Conversion < Node
@@ -166,11 +175,41 @@ module Dactyls
     validates_inclusion_of :conversionDirection, in: ["=>", "<=", "<=>", "<?>"], message: "wrong direction symbol"
     
     def left
-      LeftOf.where(:b => _id).to_r
+      results = Dactyls::Results.new()
+      LeftOf.where(:b => _id).each {|e| results.push(e.substrate)}
+      return results
     end
     
     def right
-      RightOf.where(:b => _id).to_r
+      results = Dactyls::Results.new()
+      RightOf.where(:b => _id).each {|e| results.push(e.substrate)}
+      return results
+    end
+    
+    def pair
+      sub_left = self.left()
+      sub_right = self.right()
+      
+      score = {}
+      sub_left.each_index do |i|
+        sub_right.each_index {|e| score[Rubabel::Molecule.tanimoto(Rubabel[sub_left[i].inchi, :inchi], Rubabel[sub_right[e].inchi, :inchi])] = [i, e]}
+      end
+      
+      result = []
+      allpair = []
+      while !score.empty? do
+        maxscore = score.keys.sort { |x,y| y <=> x } [0]
+        if maxscore > 0.2
+          pair = score[]
+          allpair += pair
+          result.push([sub_left[pair[0]], sub_right[pair[1]]])
+          score.delete_if {|key, value| allpair.include?(value[0]) || allpair.include?(value[1]) }
+        else
+          break
+        end
+      end
+      
+      return result
     end
     
   end

@@ -110,7 +110,7 @@ module Dactyls
         property :coefficient,       Float,  :required => true, :default => 1.0
     end
     
-    class ParicipateInReaction < ParticipateIn
+    class ParticipateInReaction < ParticipateIn
         
         validates_format_of :a, :with => /\Ainternal.(compound|protein):\S+\Z/, :on => :create, :message => 'wrong related object'
         validates_format_of :b, :with => /\Ainternal.reaction:\S+\Z/, :on => :create, :message => 'wrong related object'
@@ -129,11 +129,11 @@ module Dactyls
     end
     
     
-    class LeftOf < ParicipateInReaction
+    class LeftOf < ParticipateInReaction
         
     end
     
-    class RightOf < ParicipateInReaction
+    class RightOf < ParticipateInReaction
         
     end
     
@@ -155,16 +155,16 @@ module Dactyls
         
     end
     
-    class ParicipateInTransport < ParticipatIn
+    class ParticipateInTransport < ParticipateIn
         validates_format_of :a, :with => /\Ainternal.compound:\S+\Z/, :on => :create, :message => 'wrong related object'
         validates_format_of :b, :with => /\Ainternal.transport:\S+\Z/, :on => :create, :message => 'wrong related object'
     end
     
-    class ImportBy < ParicipateInTransport
+    class ImportBy < ParticipateInTransport
         
     end
     
-    class ExportBy < ParicipateInTransport
+    class ExportBy < ParticipateInTransport
         
     end
 end
