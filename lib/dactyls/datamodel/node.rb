@@ -123,9 +123,9 @@ module Dactyls
       return self.where('csmiles' => {:$in => smiles.flatten}).to_r
     end
     
-    def self.formula(*formula)
-      return self.where('formula' => {:$in => formula.flatten}).to_r
-    end
+    #def self.formula(*formula)
+    #  return self.where('formula' => {:$in => formula.flatten}).to_r
+    #end
     
     def self.inchi(*inchis)
       return self.where('inchi' => {:$in => inchis.flatten}).to_r
@@ -155,6 +155,14 @@ module Dactyls
       end
       
       return results
+    end
+    
+    def isomer
+      return self.class.where('formula' => {:$in => self.formula}).to_r
+    end
+    
+    def stereomer
+      return self.class.where.inchiKey(/^#{self.inchiKey.split(/-/)[0]}/)
     end
   end
   
