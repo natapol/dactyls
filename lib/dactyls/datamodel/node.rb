@@ -135,6 +135,10 @@ module Dactyls
       return self.where('inchiKey' => {:$in => inchiKeys.flatten}).to_r
     end
     
+    def self.from_pubchem(id)
+      
+    end
+    
     def participate
       results = Dactyls::Results.new()
       ParticipateInReaction.where(:a => _id).each {|e| results.push(e.reaction)}

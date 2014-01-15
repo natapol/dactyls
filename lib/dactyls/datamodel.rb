@@ -13,17 +13,18 @@ require 'dactyls/datamodel/relation'
 module Dactyls
   class Results < Array
     def method_missing(m, *args, &block)
-      results = Self.new()
-      nomethod = true
+      results = Dactyls::Results.new()
+      nomethod = []
       self.each do |item|
-        if item.public_method_defined?(m)
-          nomethod = false
+        if item.respond_to?(m)
           results.push(item.send(m))
+        else
+          nomethod.push(item.class.inspect)
         end
       end
       
-      if nomethod
-        raise NoMethodError "undefined method `#{m}' for #{self}:Dactyls::Results"
+      if results.empty?
+        raise "undefined method `#{m}' for #{nomethod}"
       else
         return results
       end
