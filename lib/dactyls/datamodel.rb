@@ -7,31 +7,11 @@
 # Documentation: Natapol Pornputtapong (RDoc'd and embellished by William Webber)
 #
 
+require 'dactyls/datamodel/document'
+require 'dactyls/datamodel/embedded'
+require 'dactyls/datamodel/scope'
 require 'dactyls/datamodel/node'
 require 'dactyls/datamodel/relation'
-
-module Dactyls
-  class Results < Array
-    def method_missing(m, *args, &block)
-      results = Dactyls::Results.new()
-      nomethod = []
-      self.each do |item|
-        if item.respond_to?(m)
-          results.push(item.send(m))
-        else
-          nomethod.push(item.class.inspect)
-        end
-      end
-      
-      if results.empty?
-        raise "undefined method `#{m}' for #{nomethod}"
-      else
-        return results
-      end
-      
-    end
-  end
-end
 
 
 
@@ -42,7 +22,6 @@ module MongoModel
     end
   end
 end
-
 
 class ArrayValidator < ActiveModel::EachValidator
   def validate_each(record, attribute, values)
@@ -67,3 +46,4 @@ class ArrayValidator < ActiveModel::EachValidator
     end
   end
 end
+

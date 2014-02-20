@@ -28,6 +28,3 @@ module Dactyls
     end
     
 end
-
-Dactyls::configuration('129.16.106.203', 'new')
-include Dactyls

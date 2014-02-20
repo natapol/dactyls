@@ -5,11 +5,11 @@ require "dactyls/version"
 Gem::Specification.new do |s|
     s.name          = 'dactyls'
     s.version       = Dactyls::VERSION
-    s.date          = '2013-11-25'
+    s.date          = '2014-02-20'
     s.platform      = Gem::Platform::RUBY
     
     s.summary       = "Provides some useful functions for systems biology field."
-    s.description   = "MongoDB ruby interface for systems biology data"
+    s.description   = "Database data structure and interface for systems biology data"
     s.authors       = ["Natapol Pornputtapong"]
     s.email         = 'natapol.por@gmail.com'
 
