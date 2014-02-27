@@ -15,9 +15,9 @@ $: << File.join(File.expand_path(File.dirname(__FILE__)))
 require 'csv'
 
 require 'sylfy'
-require 'mongomodel'
+#require 'mongomodel'
 require 'rubabel'
-
+require '../mongomodel/lib/mongomodel.rb'
 require 'dactyls/datamodel.rb'
 
 

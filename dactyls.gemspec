@@ -23,9 +23,10 @@ Gem::Specification.new do |s|
     s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
     s.require_paths = ["lib"]
     
-    s.add_dependency "sylfy", ">= 0.0.2"
-    s.add_dependency "mongo_mapper", ">= 0.12.0"
-    s.add_dependency "rubabel", ">= 0.4.3"
+    s.add_dependency "sylfy", "~> 0.0"
+    s.add_dependency "mongomodel", "~> 0.5"
+    s.add_dependency "rubabel", "~> 0.4"
+    s.add_dependency "bson_ext", "~> 1.9"
 
     
 #    s.add_development_dependency "rspec", ">= 2.11"

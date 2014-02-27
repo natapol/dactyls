@@ -6,8 +6,11 @@
 #
 # Documentation: Natapol Pornputtapong (RDoc'd and embellished by William Webber)
 #
+
 module Dactyls
   class EmbeddedDocument < MongoModel::EmbeddedDocument
-    
+    def initialize()
+      super()
+    end
   end
 end

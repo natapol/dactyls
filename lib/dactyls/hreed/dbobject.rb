@@ -132,6 +132,18 @@ module Hreed
     def stereomer
       return self.class.where.inchiKey(/^#{self.inchiKey.split(/-/)[0]}/)
     end
+    
+    def self.updateView(options = {names: false})
+      self.where.each do |entry|
+        entry.names = Sylfy::Service::PubChem.getnames(entry.inchiKey) if options[:name] == true
+        xref =[]
+        entry.dataXref.each {|e| xref.push(e) if e =~ /^internal/}
+        xref += Sylfy::Service::UniChem.idbyinchi(entry.inchiKey)
+        xref += Sylfy::Service::LipidMap.idbyinchi(entry.inchi)
+        entry.dataXref = xref
+        entry.save!
+      end
+    end
   end
   
   class Conversion < DBObject
